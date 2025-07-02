@@ -13,7 +13,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users for demo
 const mockUsers: User[] = [
   {
     id: "1",
@@ -46,19 +45,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for stored user session
     const storedUser = localStorage.getItem("digiadda_user")
     if (storedUser) {
-      setUser(JSON.parse(storedUser))
+      try {
+        setUser(JSON.parse(storedUser))
+      } catch (e) {
+        localStorage.removeItem("digiadda_user")
+      }
     }
     setIsLoading(false)
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true)
-
-    // Mock authentication
     const foundUser = mockUsers.find((u) => u.email === email)
+
     if (foundUser && password === "password") {
       setUser(foundUser)
       localStorage.setItem("digiadda_user", JSON.stringify(foundUser))
@@ -75,7 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("digiadda_user")
   }
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export const useAuth = () => {
