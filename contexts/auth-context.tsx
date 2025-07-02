@@ -2,21 +2,15 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import type { Database } from "@/types/supabase"
+import type { AppUser, Role } from "@/types/supabase"
 
-const supabase = createBrowserClient<Database>(
+const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-type User = {
-  id: string
-  email: string
-  role: "super_admin" | "sub_admin" | "team" | "client"
-}
-
 type AuthContextType = {
-  user: User | null | undefined
+  user: AppUser | null | undefined
   loading: boolean
 }
 
@@ -26,7 +20,7 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null | undefined>(undefined)
+  const [user, setUser] = useState<AppUser | null | undefined>(undefined)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -37,8 +31,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return
       }
 
-      const role = user.user_metadata?.role || "team" // fallback role
-      setUser({ id: user.id, email: user.email!, role })
+      const metadata = user.user_metadata || {}
+
+      const role: Role = metadata.role || "team"
+      const name = metadata.name || user.email?.split("@")[0]
+
+      setUser({
+        id: user.id,
+        email: user.email!,
+        role,
+        name,
+        user_metadata: metadata,
+      })
       setLoading(false)
     })
   }, [])

@@ -1,13 +1,12 @@
-export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
+export type Role = "super_admin" | "sub_admin" | "team" | "client"
 
-export interface Database {
-  public: {
-    Tables: {
-      // Add your tables here later if needed
-    }
-    Views: {}
-    Functions: {}
-    Enums: {}
-    CompositeTypes: {}
+export interface AppUser {
+  id: string
+  email: string
+  role: Role
+  name?: string
+  user_metadata?: {
+    name?: string
+    [key: string]: any
   }
 }
