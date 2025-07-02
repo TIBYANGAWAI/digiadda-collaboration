@@ -1,8 +1,10 @@
-// File: app/dashboard/admin/page.tsx
+// ✅ Minimal working placeholder
+
 export default function AdminDashboardPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-3xl font-bold">Welcome to Admin Dashboard</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      <p className="text-gray-600 mt-2">This is a placeholder for the admin dashboard.</p>
     </div>
   );
 }
