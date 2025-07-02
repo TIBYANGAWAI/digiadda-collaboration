@@ -1,41 +1,62 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { createClient } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Crown, User, UserCheck } from "lucide-react"
+import { Loader2 } from "lucide-react"
+
+// Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-  const { login, isLoading } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setIsLoading(true)
 
-    const success = await login(email, password)
-    if (success) {
-      router.push("/dashboard")
-    } else {
-      setError("Invalid credentials. Please check the demo credentials below.")
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    setIsLoading(false)
+
+    if (error) {
+      setError(error.message || "Login failed. Please try again.")
+      return
     }
-  }
 
-  const handleDemoLogin = async (demoEmail: string) => {
-    setEmail(demoEmail)
-    setPassword("password")
-    const success = await login(demoEmail, "password")
-    if (success) {
+    const userId = data.user.id
+
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .single()
+
+    if (roleError || !roleData) {
+      setError("Unable to determine user role.")
+      return
+    }
+
+    const role = roleData.role
+
+    if (role === "admin") {
+      router.push("/dashboard/admin")
+    } else if (role === "team") {
+      router.push("/dashboard/team")
+    } else if (role === "client") {
+      router.push("/dashboard/client")
+    } else {
       router.push("/dashboard")
     }
   }
@@ -47,7 +68,9 @@ export default function LoginPage() {
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             DigiAdda
           </CardTitle>
-          <CardDescription className="text-gray-600">Sign in to your collaboration workspace</CardDescription>
+          <CardDescription className="text-gray-600">
+            Sign in to your collaboration workspace
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,57 +106,6 @@ export default function LoginPage() {
               Sign In
             </Button>
           </form>
-
-          <div className="mt-6 space-y-3">
-            <p className="text-sm font-medium text-gray-700 text-center">Quick Demo Access:</p>
-
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => handleDemoLogin("admin@digiadda.com")}
-                disabled={isLoading}
-              >
-                <Crown className="mr-2 h-4 w-4 text-yellow-500" />
-                <div className="text-left">
-                  <div className="font-medium">Super Admin</div>
-                  <div className="text-xs text-gray-500">admin@digiadda.com</div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => handleDemoLogin("john@digiadda.com")}
-                disabled={isLoading}
-              >
-                <User className="mr-2 h-4 w-4 text-blue-500" />
-                <div className="text-left">
-                  <div className="font-medium">Team Member</div>
-                  <div className="text-xs text-gray-500">john@digiadda.com</div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => handleDemoLogin("client@digiadda.com")}
-                disabled={isLoading}
-              >
-                <UserCheck className="mr-2 h-4 w-4 text-green-500" />
-                <div className="text-left">
-                  <div className="font-medium">Client Portal</div>
-                  <div className="text-xs text-gray-500">client@digiadda.com</div>
-                </div>
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-4 text-xs text-gray-500 text-center">
-            <p>
-              All demo accounts use password: <code className="bg-gray-100 px-1 rounded">password</code>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

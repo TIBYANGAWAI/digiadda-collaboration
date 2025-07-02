@@ -25,3 +25,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# IDE/editor
+.vscode/
+.idea/
+
+# system files
+.DS_Store
+Thumbs.db
+
+# pnpm
+pnpm-lock.yaml
+.pnpm-store/
+
+# testing
+/coverage
+
+# Supabase CLI (if used)
+.supabase/
+
+# logs
+*.log
+*.log.*
