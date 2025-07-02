@@ -1,10 +1,35 @@
-"use client"
+'use client'
 
-export default function DashboardPage() {
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+
+export default function DashboardRedirectPage() {
+  const { user } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (user === null) {
+      // Still loading, do nothing
+      return
+    }
+
+    if (!user) {
+      router.push("/login")
+    } else if (user.role === "super_admin" || user.role === "sub_admin") {
+      router.push("/dashboard/admin")
+    } else if (user.role === "team") {
+      router.push("/dashboard/team")
+    } else if (user.role === "client") {
+      router.push("/dashboard/client")
+    } else {
+      router.push("/login") // fallback
+    }
+  }, [user, router])
+
   return (
-    <div className="p-8 min-h-screen flex flex-col items-center justify-center bg-gray-50">
-      <h1 className="text-3xl font-bold text-gray-800">Dashboard is working!</h1>
-      <p className="mt-2 text-gray-500">This is a placeholder dashboard page.</p>
+    <div className="flex items-center justify-center min-h-screen">
+      <p className="text-gray-500 text-sm">Redirecting to your dashboard...</p>
     </div>
   )
 }
