@@ -1,31 +1,35 @@
-'use client'
+"use client"
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 
 export default function DashboardRedirectPage() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (user === null) {
-      // Still loading, do nothing
-      return
-    }
+    if (loading || user === undefined) return // wait for auth check
 
     if (!user) {
       router.push("/login")
-    } else if (user.role === "super_admin" || user.role === "sub_admin") {
-      router.push("/dashboard/admin")
-    } else if (user.role === "team") {
-      router.push("/dashboard/team")
-    } else if (user.role === "client") {
-      router.push("/dashboard/client")
     } else {
-      router.push("/login") // fallback
+      switch (user.role) {
+        case "super_admin":
+        case "sub_admin":
+          router.push("/dashboard/admin")
+          break
+        case "team":
+          router.push("/dashboard/team")
+          break
+        case "client":
+          router.push("/dashboard/client")
+          break
+        default:
+          router.push("/login")
+      }
     }
-  }, [user, router])
+  }, [user, loading, router])
 
   return (
     <div className="flex items-center justify-center min-h-screen">
