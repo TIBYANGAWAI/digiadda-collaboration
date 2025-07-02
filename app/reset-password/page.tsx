@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
-import { supabase } from "@/utils/supabase/client"
+import { createClient } from "@/utils/supabase/client" 
+const supabase = createClient()
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("")

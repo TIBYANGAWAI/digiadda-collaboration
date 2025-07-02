@@ -1,83 +1,81 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardContent, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
-import { supabase } from "@/utils/supabase/client"
+import { createClient } from "@/utils/supabase/client"
+
+const supabase = createClient()
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [resetMessage, setResetMessage] = useState("")
+
+  const router = useRouter()
+  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setLoading(true)
+    setIsLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       setError("Invalid credentials. Please check your login details.")
-      setLoading(false)
+      setIsLoading(false)
+    } else {
+      const role = data.user?.user_metadata?.role || "client"
+      if (role === "admin") router.push("/dashboard")
+      else if (role === "team") router.push("/dashboard/team")
+      else router.push("/dashboard/client")
+    }
+  }
+
+  const handleResetPassword = async () => {
+    setError("")
+    setResetMessage("")
+    if (!email) {
+      setError("Please enter your email to reset password.")
       return
     }
 
-    const role = data.user?.user_metadata?.role
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
 
-    if (role === "admin") {
-      router.push("/dashboard")
-    } else if (role === "team") {
-      router.push("/dashboard/team")
-    } else if (role === "client") {
-      router.push("/dashboard/client")
-    } else {
-      setError("No role assigned. Please contact support.")
-    }
-
-    setLoading(false)
-  }
-
-  const handlePasswordReset = async () => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email)
     if (error) {
       setError("Failed to send reset link. Please try again.")
     } else {
-      alert("Password reset link sent to your email.")
+      setResetMessage("Password reset link sent to your email.")
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="text-center flex flex-col items-center gap-2">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <Card className="w-full max-w-md shadow-md">
+        <CardHeader className="flex flex-col items-center gap-3">
           <img
             src="/digiadda-logo.png"
             alt="DigiAdda Logo"
-            className="h-16 w-16 rounded-full shadow object-contain"
+            className="h-20 object-contain"
           />
-          <CardDescription className="text-gray-600 mt-1">
-            Sign in to your collaboration workspace
+          <CardDescription className="text-center text-muted-foreground text-sm">
+            Sign in to your DigiAdda workspace
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -88,7 +86,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -106,19 +104,28 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
-            </Button>
+            {resetMessage && (
+              <Alert variant="default">
+                <AlertDescription>{resetMessage}</AlertDescription>
+              </Alert>
+            )}
 
-            <button
-              type="button"
-              onClick={handlePasswordReset}
-              className="w-full mt-2 text-sm text-blue-600 hover:underline"
-              disabled={!email}
-            >
-              Forgot Password?
-            </button>
+            <div className="flex items-center justify-between">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign In
+              </Button>
+            </div>
+
+            <div className="text-sm text-center mt-2">
+              <button
+                type="button"
+                className="text-blue-600 hover:underline"
+                onClick={handleResetPassword}
+              >
+                Forgot password?
+              </button>
+            </div>
           </form>
         </CardContent>
       </Card>
