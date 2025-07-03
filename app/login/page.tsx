@@ -27,17 +27,8 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      const role = data.user.user_metadata?.role || "team"
-      const redirectPath =
-        role === "super_admin"
-          ? "/dashboard/admin"
-          : role === "team"
-          ? "/dashboard/team"
-          : role === "client"
-          ? "/dashboard/client"
-          : "/dashboard"
-
-      router.push(redirectPath)
+      // Always redirect to /dashboard/admin after successful login
+      router.push('/dashboard/admin')
     }
   }
 
