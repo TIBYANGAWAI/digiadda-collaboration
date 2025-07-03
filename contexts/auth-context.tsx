@@ -2,13 +2,10 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createBrowserClient } from "@supabase/ssr"
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs"
 import type { AppUser } from "@/types/supabase"
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = createPagesBrowserClient()
 
 type AuthContextType = {
   user: AppUser | null | undefined
