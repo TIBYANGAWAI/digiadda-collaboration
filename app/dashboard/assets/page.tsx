@@ -26,70 +26,11 @@ import {
 import type { Asset } from "@/lib/types"
 import { FileUploadService } from "@/lib/file-upload"
 
-// Mock assets data
-const mockAssets: Asset[] = [
-  {
-    id: "1",
-    name: "Homepage_Design_v3.fig",
-    type: "image",
-    url: "/placeholder.svg?height=200&width=300",
-    size: 2457600, // 2.4 MB
-    uploadedBy: "sarah-designer",
-    projectId: "1",
-    createdAt: new Date("2024-01-15"),
-    tags: ["design", "homepage", "figma"],
-  },
-  {
-    id: "2",
-    name: "Brand_Guidelines.pdf",
-    type: "document",
-    url: "/placeholder.svg?height=200&width=300",
-    size: 1887436, // 1.8 MB
-    uploadedBy: "emma-creative",
-    projectId: "3",
-    createdAt: new Date("2024-01-14"),
-    tags: ["brand", "guidelines", "pdf"],
-  },
-  {
-    id: "3",
-    name: "Product_Demo.mp4",
-    type: "video",
-    url: "/placeholder.svg?height=200&width=300",
-    size: 15728640, // 15 MB
-    uploadedBy: "john-developer",
-    projectId: "2",
-    createdAt: new Date("2024-01-13"),
-    tags: ["demo", "video", "product"],
-  },
-  {
-    id: "4",
-    name: "Logo_Variations.zip",
-    type: "document",
-    url: "/placeholder.svg?height=200&width=300",
-    size: 5242880, // 5 MB
-    uploadedBy: "sarah-designer",
-    projectId: "3",
-    createdAt: new Date("2024-01-12"),
-    tags: ["logo", "brand", "assets"],
-  },
-]
-
-const mockProjects = [
-  { id: "1", name: "Website Redesign" },
-  { id: "2", name: "Mobile App Development" },
-  { id: "3", name: "Brand Identity Package" },
-]
-
-const assetStats = {
-  totalAssets: 156,
-  totalSize: "2.4 GB",
-  imagesCount: 89,
-  videosCount: 23,
-  documentsCount: 44,
-}
+// ...existing code...
+// Dummy/mock assets, projects, and stats removed. Please fetch real assets, projects, and stats from your backend or Supabase here.
 
 export default function AssetsPage() {
-  const [assets, setAssets] = useState<Asset[]>(mockAssets)
+  const [assets, setAssets] = useState<Asset[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedProject, setSelectedProject] = useState<string>("all")
@@ -238,11 +179,7 @@ export default function AssetsPage() {
                       className="px-3 py-2 border rounded-md text-sm"
                     >
                       <option value="all">All Projects</option>
-                      {mockProjects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.name}
-                        </option>
-                      ))}
+                      {/* Replace with real projects from your backend or Supabase */}
                     </select>
 
                     <select

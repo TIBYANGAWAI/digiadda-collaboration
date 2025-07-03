@@ -14,17 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Trash2, Save, Send } from "lucide-react"
 import type { Invoice, InvoiceItem } from "@/lib/types"
 
-const mockClients = [
-  { id: "client-1", name: "TechCorp", email: "billing@techcorp.com" },
-  { id: "client-2", name: "StartupXYZ", email: "finance@startupxyz.com" },
-  { id: "client-3", name: "Fashion Co", email: "accounts@fashionco.com" },
-]
-
-const mockProjects = [
-  { id: "1", name: "Website Redesign", clientId: "client-1" },
-  { id: "2", name: "Mobile App", clientId: "client-2" },
-  { id: "3", name: "Brand Identity", clientId: "client-3" },
-]
+// ...existing code...
+// Dummy/mock clients and projects removed. Please fetch real clients and projects from your backend or Supabase here.
 
 export default function NewInvoicePage() {
   const router = useRouter()
@@ -128,9 +119,8 @@ export default function NewInvoicePage() {
     router.push("/dashboard/invoices")
   }
 
-  const filteredProjects = mockProjects.filter(
-    (project) => !formData.clientId || project.clientId === formData.clientId,
-  )
+  // Replace with real filtered projects from your backend or Supabase
+  const filteredProjects: any[] = []
 
   return (
     <div className="flex-1 flex flex-col">
@@ -163,11 +153,7 @@ export default function NewInvoicePage() {
                         <SelectValue placeholder="Select a client" />
                       </SelectTrigger>
                       <SelectContent>
-                        {mockClients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name}
-                          </SelectItem>
-                        ))}
+                        {/* Replace with real clients from your backend or Supabase */}
                       </SelectContent>
                     </Select>
                   </div>
@@ -183,11 +169,7 @@ export default function NewInvoicePage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">No project</SelectItem>
-                        {filteredProjects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
+                        {/* Replace with real filtered projects from your backend or Supabase */}
                       </SelectContent>
                     </Select>
                   </div>
@@ -429,17 +411,8 @@ export default function NewInvoicePage() {
                 </CardHeader>
                 <CardContent>
                   {(() => {
-                    const client = mockClients.find((c) => c.id === formData.clientId)
-                    return client ? (
-                      <div className="space-y-2 text-sm">
-                        <p>
-                          <span className="font-medium">Name:</span> {client.name}
-                        </p>
-                        <p>
-                          <span className="font-medium">Email:</span> {client.email}
-                        </p>
-                      </div>
-                    ) : null
+                    // Replace with real client lookup from your backend or Supabase
+                    return null
                   })()}
                 </CardContent>
               </Card>

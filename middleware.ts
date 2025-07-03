@@ -1,36 +1,35 @@
-import { createSupabaseServerClient } from "@/utils/supabase/middleware-client"
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function middleware(req: NextRequest) {
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const res = NextResponse.next()
 
-  if (!user) {
-    return NextResponse.redirect(new URL("/login", req.url))
+  const supabase = createMiddlewareClient({ req, res })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const isAuthRoute = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/reset-password")
+  const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard")
+
+  // If not authenticated, redirect to login
+  if (!user && isProtectedRoute) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = "/login"
+    redirectUrl.searchParams.set("redirectedFrom", req.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
   }
 
-  // Fetch role from Supabase
-  const { data: roleData } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id)
-    .single()
-
-  if (!roleData) {
-    return NextResponse.redirect(new URL("/login", req.url))
+  // If already logged in and tries to visit login, redirect to dashboard
+  if (user && isAuthRoute) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = "/dashboard/admin"
+    return NextResponse.redirect(redirectUrl)
   }
 
-  const role = roleData.role
-
-  if (req.nextUrl.pathname.startsWith("/dashboard/admin") && role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url))
-  }
-
-  return NextResponse.next()
+  return res
 }
+
 export const config = {
-  matcher: [
-    "/dashboard/:path*",     // protect all dashboard pages
-  ],
+  matcher: ["/login", "/dashboard/:path*", "/reset-password"],
 }

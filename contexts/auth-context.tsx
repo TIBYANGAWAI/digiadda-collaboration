@@ -1,8 +1,9 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { createBrowserClient } from "@supabase/ssr"
-import type { AppUser, Role } from "@/types/supabase"
+import type { AppUser } from "@/types/supabase"
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,54 +13,50 @@ const supabase = createBrowserClient(
 type AuthContextType = {
   user: AppUser | null | undefined
   loading: boolean
+  logout: () => void        // ✅ Added logout
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: undefined,
   loading: true,
+  logout: () => {},         // ✅ Placeholder default
 })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AppUser | null | undefined>(undefined)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    const fetchUser = async () => {
-      console.log("🔄 Checking Supabase session...")
-
-      const { data, error } = await supabase.auth.getUser()
-
-      if (error || !data?.user) {
-        console.warn("⚠️ Supabase user fetch error:", error)
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      if (error || !user) {
         setUser(null)
         setLoading(false)
         return
       }
 
-      const supaUser = data.user
-      const metadata = supaUser.user_metadata || {}
-      const role: Role = metadata.role || "team"
-      const name = metadata.name || supaUser.email?.split("@")[0] || "User"
+      const role = user.user_metadata?.role || "team"
+      const name = user.user_metadata?.name || user.email?.split("@")[0] || "User"
 
-      const appUser: AppUser = {
-        id: supaUser.id,
-        email: supaUser.email!,
+      setUser({
+        id: user.id,
+        email: user.email!,
         role,
         name,
-        user_metadata: metadata,
-      }
-
-      console.log("✅ Logged in user:", appUser)
-
-      setUser(appUser)
+        user_metadata: user.user_metadata,
+      })
       setLoading(false)
-    }
-
-    fetchUser()
+    })
   }, [])
 
+  const logout = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    router.push("/login")
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   )

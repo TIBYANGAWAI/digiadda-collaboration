@@ -1,27 +1,29 @@
+// file: app/page.tsx
 "use client"
 
-import { useAuth } from "@/contexts/auth-context"
-import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
-export default function HomePage() {
-  const { user, isLoading } = useAuth()
+export default function Home() {
+  const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        router.push("/dashboard")
-      } else {
-        router.push("/login")
-      }
-    }
-  }, [user, isLoading, router])
+    if (loading) return
 
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin" />
-    </div>
-  )
+    const role = user?.role || "team"
+    const redirectTo =
+      role === "super_admin" || role === "sub_admin"
+        ? "/dashboard/admin"
+        : "/dashboard/team/member"
+
+    if (user) {
+      router.replace(redirectTo)
+    } else {
+      router.replace("/login")
+    }
+  }, [user, loading])
+
+  return null
 }
