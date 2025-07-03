@@ -24,27 +24,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user }, error }) => {
-      if (error || !user) {
+    const fetchUser = async () => {
+      console.log("🔄 Checking Supabase session...")
+
+      const { data, error } = await supabase.auth.getUser()
+
+      if (error || !data?.user) {
+        console.warn("⚠️ Supabase user fetch error:", error)
         setUser(null)
         setLoading(false)
         return
       }
 
-      const metadata = user.user_metadata || {}
-
+      const supaUser = data.user
+      const metadata = supaUser.user_metadata || {}
       const role: Role = metadata.role || "team"
-      const name = metadata.name || user.email?.split("@")[0]
+      const name = metadata.name || supaUser.email?.split("@")[0] || "User"
 
-      setUser({
-        id: user.id,
-        email: user.email!,
+      const appUser: AppUser = {
+        id: supaUser.id,
+        email: supaUser.email!,
         role,
         name,
         user_metadata: metadata,
-      })
+      }
+
+      console.log("✅ Logged in user:", appUser)
+
+      setUser(appUser)
       setLoading(false)
-    })
+    }
+
+    fetchUser()
   }, [])
 
   return (
