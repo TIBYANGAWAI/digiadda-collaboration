@@ -1,24 +1,16 @@
-import { createServerClient } from '@supabase/ssr'
+
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-export const createSupabaseServerClient = async () => {
-  const cookieStore = await cookies() // ✅ FIXED with await
+export const createSupabaseServerClient = () => {
+  // You need to provide req and res objects as expected by createPagesServerClient
+  // In middleware, you may not have access to req/res, so you might need to use createServerComponentClient instead
+  // Here's an example using createServerComponentClient if you are in a server component/middleware context:
+  // import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+  // return createServerComponentClient({ cookies })
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value
-        },
-        set() {
-          // not available in middleware
-        },
-        remove() {
-          // not available in middleware
-        },
-      },
-    }
-  )
+  // If you do have req and res, pass them like this:
+  // return createPagesServerClient({ req, res })
+
+  throw new Error('createPagesServerClient requires req and res. Use createServerComponentClient for middleware/server components.');
 }
